@@ -37,7 +37,7 @@ jobs:
           password: ${{ secrets.MAIL_PASS }}
           subject: "❌ Tests échoués"
           to: "tonadresse@gmail.com"
-          from: "CI Pipeline <tonadresse@gmail.com>"
+          from: "CI Pipeline <${{ secrets.MAIL_USER }}>"
           body: "Les tests unitaires ont échoué dans GitHub Actions."
 
   build:
@@ -68,3 +68,12 @@ jobs:
         run: |
           docker tag monimage:latest ${{ secrets.DOCKER_USERNAME }}/monimage:latest
           # docker tag monimage:latest myregistry.example.com/monimage:latest
+
+      - name: Push to Docker Hub
+        if: ${{ success() }}
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/monimage:latest
+
+      # Si tu utilises un registre privé, décommente :
+      # - name: Push to Private Registry
+      #   if: ${{ success() }}
+      #   run: docker push myregistry.example.com/monimage:latest
