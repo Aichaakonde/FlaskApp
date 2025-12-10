@@ -33,12 +33,15 @@ jobs:
         with:
           server_address: smtp.gmail.com
           server_port: 465
-          username: ${{ secrets.MAIL_USER }}
-          password: ${{ secrets.MAIL_PASS }}
-          subject: "❌ Tests échoués"
-          to: "tonadresse@gmail.com"
+          username: ${{ secrets.MAIL_USER }}        # Ton adresse Gmail
+          password: ${{ secrets.MAIL_PASS }}        # App Password Gmail
+          subject: "❌ Tests échoués sur GitHub Actions"
+          to: "tonadresse@gmail.com"                # Destinataire du mail
           from: "CI Pipeline <${{ secrets.MAIL_USER }}>"
-          body: "Les tests unitaires ont échoué dans GitHub Actions."
+          body: |
+            Les tests unitaires de ton projet Flask ont échoué.
+            Consulte GitHub Actions pour plus de détails :
+            ${{ github.repository }}/actions/runs/${{ github.run_id }}
 
   build:
     runs-on: ubuntu-latest
@@ -53,27 +56,13 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Si tu as un registre privé, décommente et ajoute tes secrets
-      # - name: Login to Private Registry
-      #   uses: docker/login-action@v2
-      #   with:
-      #     registry: myregistry.example.com
-      #     username: ${{ secrets.PRIVATE_REGISTRY_USER }}
-      #     password: ${{ secrets.PRIVATE_REGISTRY_PASSWORD }}
-
       - name: Build Docker image
         run: docker build -t monimage:latest .
 
-      - name: Tag Docker images
+      - name: Tag Docker image
         run: |
           docker tag monimage:latest ${{ secrets.DOCKER_USERNAME }}/monimage:latest
-          # docker tag monimage:latest myregistry.example.com/monimage:latest
 
       - name: Push to Docker Hub
         if: ${{ success() }}
         run: docker push ${{ secrets.DOCKER_USERNAME }}/monimage:latest
-
-      # Si tu utilises un registre privé, décommente :
-      # - name: Push to Private Registry
-      #   if: ${{ success() }}
-      #   run: docker push myregistry.example.com/monimage:latest
